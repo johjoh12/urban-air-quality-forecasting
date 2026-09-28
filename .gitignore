@@ -1,0 +1,11 @@
+# .gitignore
+data/raw/
+data/processed/
+__pycache__/
+*.py[cod]
+.venv/
+env/
+.ipynb_checkpoints/
+.DS_Store
+# CatBoost
+catboost_info/
