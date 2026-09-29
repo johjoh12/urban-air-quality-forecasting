@@ -10,3 +10,4 @@ env/
 
 # CatBoost
 catboost_info/
+.vscode/
