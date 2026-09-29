@@ -1,7 +1,6 @@
 import os
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import seaborn as sns
 
 
@@ -14,12 +13,12 @@ def plot_predictions(
     os.makedirs(output_dir, exist_ok=True)
     sns.set_theme(style="whitegrid")
 
-    fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+    fig, axes = plt.subplots(1, 2, figsize=(15, 6))
 
     # 1. 45-Degree Parity Scatter Plot
-    axes[0].scatter(y_true, y_pred, alpha=0.4, color="#1f77b4", edgecolor="none")
-    min_val = min(y_true.min(), y_pred.min())
-    max_val = max(y_true.max(), y_pred.max())
+    axes[0].scatter(y_true, y_pred, alpha=0.5, color="#1f77b4", edgecolor="none")
+    min_val = min(float(np.min(y_true)), float(np.min(y_pred)))
+    max_val = max(float(np.max(y_true)), float(np.max(y_pred)))
     axes[0].plot(
         [min_val, max_val],
         [min_val, max_val],
@@ -38,7 +37,7 @@ def plot_predictions(
 
     # 2. Residual Distribution Plot
     residuals = y_true - y_pred
-    sns.histplot(residuals, kde=True, ax=axes[1], color="#2ca02c", bins=40)
+    sns.histplot(residuals, kde=True, ax=axes[1], color="#2ca02c", bins=35)
     axes[1].axvline(0, color="red", linestyle="--", lw=1.5)
     axes[1].set_title(
         f"{model_name}: Residual Distribution Error",
@@ -46,7 +45,7 @@ def plot_predictions(
         weight="bold",
     )
     axes[1].set_xlabel("Residual ($y_{true} - y_{pred}$)")
-    axes[1].set_ylabel("Density")
+    axes[1].set_ylabel("Count")
 
     plt.tight_layout()
     save_path = os.path.join(

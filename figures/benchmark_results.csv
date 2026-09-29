@@ -1,6 +1,6 @@
 Model,Mean RMSE,Mean MAE,Mean R2
-Baseline (Ridge),42.411,28.797,0.679
-XGBoost,43.552,28.404,0.658
-LightGBM,44.38,29.657,0.625
-CatBoost,44.444,29.297,0.635
-Random Forest,44.633,27.67,0.635
+Random Forest,42.236,26.456,0.681
+LightGBM,42.853,27.132,0.67
+XGBoost,43.48,27.749,0.661
+CatBoost,44.142,28.401,0.651
+Baseline (Ridge),52.55,30.352,0.469

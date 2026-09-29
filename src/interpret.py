@@ -1,7 +1,6 @@
 import os
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import shap
 
 
@@ -14,9 +13,13 @@ def run_shap_analysis(
 ):
     os.makedirs(output_dir, exist_ok=True)
 
-    # Use TreeExplainer for tree ensembles
+    # TreeExplainer is optimal for LightGBM, XGBoost, and CatBoost
     explainer = shap.TreeExplainer(model)
     shap_values = explainer.shap_values(X_val)
+
+    # Handle multidimensional array cases if returned by specific versions
+    if isinstance(shap_values, list):
+        shap_values = shap_values[0]
 
     # Beeswarm Summary Plot
     plt.figure(figsize=(10, 6))
@@ -28,7 +31,7 @@ def run_shap_analysis(
         max_display=12,
     )
     plt.title(
-        "SHAP Feature Importance (Global Impact on $PM_{2.5}$)",
+        "SHAP Feature Importance (Global Impact on $\log(1 + PM_{2.5})$)",
         fontsize=12,
         weight="bold",
         pad=15,

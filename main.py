@@ -20,12 +20,11 @@ def run():
     df.to_csv(PROCESSED_PATH, index=False)
     print(f"Dataset ready. Dimensions: {df.shape}")
 
-    print("\n[2/4] Cross-validating models using TimeSeriesSplit...")
+    print("\n[2/4] Cross-validating models using TimeSeriesSplit (Log Target)...")
     leaderboard = evaluate_models(df, target_col="Target_PM25_t1")
     print("\n=== MODEL BENCHMARK LEADERBOARD ===")
     print(leaderboard.to_markdown(index=False))
 
-    # Save leaderboard for README
     os.makedirs("figures", exist_ok=True)
     leaderboard.to_csv("figures/benchmark_results.csv", index=False)
 
@@ -37,28 +36,39 @@ def run():
         "AQI_Bucket",
         "Target_PM25_t1",
         "Target_NO2_t1",
+        "Log_Target_PM25_t1",
+        "Log_Target_NO2_t1",
     ]
     feature_cols = [c for c in df.columns if c not in drop_cols]
     X = df[feature_cols].values
     y = df["Target_PM25_t1"].values
 
-    # Train on past, evaluate on final out-of-time horizon
+    # Outer holdout split
     tscv = TimeSeriesSplit(n_splits=5)
     for train_idx, val_idx in tscv.split(X):
-        pass  # Grab the final outer fold
+        pass
 
     X_train, X_val = X[train_idx], X[val_idx]
     y_train, y_val = y[train_idx], y[val_idx]
 
+    # Model configured with log transform
     final_model = LGBMRegressor(
-        n_estimators=200,
-        learning_rate=0.04,
-        num_leaves=31,
+        n_estimators=120,
+        learning_rate=0.03,
+        num_leaves=15,
+        min_child_samples=20,
+        subsample=0.8,
+        colsample_bytree=0.8,
+        reg_alpha=0.5,
+        reg_lambda=1.5,
         random_state=42,
         verbose=-1,
     )
-    final_model.fit(X_train, y_train)
-    val_preds = np.clip(final_model.predict(X_val), a_min=0, a_max=None)
+    final_model.fit(X_train, np.log1p(y_train))
+
+    # Invert predictions
+    val_preds = np.expm1(final_model.predict(X_val))
+    val_preds = np.clip(val_preds, a_min=0, a_max=None)
 
     print("\n[4/4] Generating diagnostic plots and SHAP values...")
     plot_predictions(
@@ -71,7 +81,7 @@ def run():
         feature_names=feature_cols,
         output_dir="figures",
     )
-    print("\nExecution complete. Figures saved to ./figures/")
+    print("\nExecution complete. Updated plots saved to ./figures/")
 
 
 if __name__ == "__main__":
